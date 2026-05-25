@@ -82,6 +82,9 @@ button, .choice{transition:all .18s ease}
 .choice.correct{background:linear-gradient(90deg, rgba(191,243,214,0.9), rgba(210,251,224,0.9));border-color:rgba(120,200,160,0.6);}
 .choice.wrong{background:linear-gradient(90deg, rgba(246,194,201,0.95), rgba(255,230,235,0.95));border-color:rgba(220,140,150,0.6);}
 
+/* 未選或非重點選項淡化處理 */
+.choice.dim{opacity:0.5;filter:grayscale(60%);transform:none;box-shadow:none}
+
 #feedback{margin-top:12px;padding:10px;border-radius:12px;background:rgba(255,255,255,0.6)}
 #feedback.correct{background:var(--mint);color:#043826}
 #feedback.wrong{background:var(--mist-rose);color:#5b1620}

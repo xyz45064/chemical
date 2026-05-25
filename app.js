@@ -150,8 +150,25 @@ function handleAnswer(chosenIdx, isTimeout){
   } else {
     state.totalScore[0] += score;
   }
-  // disable choices
-  Array.from(EL.choices.children).forEach(ch=>ch.classList.add('disabled'));
+  // disable choices and mark correct / wrong / dim states
+  Array.from(EL.choices.children).forEach((ch)=>{
+    ch.classList.add('disabled');
+    const idx = parseInt(ch.dataset.idx,10);
+    if(chosenIdx === null){
+      // timeout: show correct, dim others
+      if(idx === correct) ch.classList.add('correct');
+      else ch.classList.add('dim');
+    } else if(chosenIdx === correct){
+      // answered correctly: mark chosen as correct, dim others
+      if(idx === correct) ch.classList.add('correct');
+      else ch.classList.add('dim');
+    } else {
+      // answered incorrectly: chosen wrong -> red, correct -> green, others dim
+      if(idx === correct) ch.classList.add('correct');
+      else if(idx === chosenIdx) ch.classList.add('wrong');
+      else ch.classList.add('dim');
+    }
+  });
   // show feedback
   const correctText = `正確答案：${String.fromCharCode(65+correct)}. ${q.choices[correct]}`;
   const chosenText = chosenIdx===null? '（未作答或超時）': `你的答案：${String.fromCharCode(65+chosenIdx)}. ${q.choices[chosenIdx]}`;
