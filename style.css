@@ -1,29 +1,101 @@
-:root{--bg:#f6f8fb;--card:#ffffff;--accent:#2b6cb0;--danger:#e53e3e}
-*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-body{margin:0;background:var(--bg);color:#111}
-.container{max-width:900px;margin:24px auto;padding:16px}
-header h1{margin:0 0 12px 0;font-size:20px;text-align:center}
-.screen{background:var(--card);padding:16px;border-radius:8px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+:root{
+	--bg-1:#f0e6ff; /* 薰衣草紫 */
+	--bg-2:#fce4f0; /* 玫瑰粉 */
+	--bg-3:#e4eeff; /* 霧藍 */
+	--card:rgba(255,255,255,0.6);
+	--glass:rgba(255,255,255,0.45);
+	--accent-gradient:linear-gradient(90deg,#ffc2e6 0%,#caa3ff 50%,#9ec8ff 100%);
+	--mint:rgba(191,243,214,0.95);
+	--mist-rose:rgba(246,194,201,0.95);
+	--text:#2b2540;
+}
+
+*{box-sizing:border-box;font-family:'Noto Serif TC', serif}
+body{
+	margin:0;
+	color:var(--text);
+	background:linear-gradient(135deg,var(--bg-1),var(--bg-2),var(--bg-3));
+	-webkit-font-smoothing:antialiased;
+	-moz-osx-font-smoothing:grayscale;
+	min-height:100vh;
+	position:relative;
+}
+
+/* 細緻裝飾：淡色圓點與星星 */
+body::before{
+	content:"";
+	position:fixed;inset:0;pointer-events:none;z-index:0;
+	background-image:
+		radial-gradient(rgba(255,255,255,0.22) 1px, transparent 1px),
+		radial-gradient(rgba(255,255,255,0.12) 2px, transparent 2px),
+		linear-gradient(120deg, rgba(255,255,255,0.02), rgba(0,0,0,0));
+	background-size: 24px 24px, 48px 48px, 100% 100%;
+	transform:translateZ(0);
+}
+
+.container{max-width:940px;margin:28px auto;padding:20px;position:relative;z-index:1}
+header h1{margin:0 0 12px 0;font-size:26px;text-align:center}
+
+.screen{
+	background:var(--card);
+	padding:20px;
+	border-radius:18px;
+	box-shadow:0 10px 30px rgba(70,52,120,0.08);
+	border:1px solid rgba(255,255,255,0.5);
+	backdrop-filter: blur(6px);
+}
 .hidden{display:none}
-.mode-select label{margin-right:12px}
+.mode-select label{margin-right:14px}
 .names label{display:block;margin:8px 0}
-#start-btn{margin-top:12px;padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px}
-.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+
+button, .choice{transition:all .18s ease}
+
+#start-btn{
+	margin-top:12px;
+	padding:12px 18px;
+	background:var(--accent-gradient);
+	color:#fff;border:none;border-radius:14px;
+	box-shadow:0 8px 20px rgba(170,120,200,0.12);
+	backdrop-filter: blur(6px);
+	cursor:pointer;
+	font-weight:700;
+}
+#start-btn:hover{transform:translateY(-3px)}
+
+.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 #player-indicator{font-weight:700}
 #score-display{font-size:16px}
-#question-meta{margin-bottom:8px}
-#timer{position:relative;height:18px;background:#eee;border-radius:10px;overflow:hidden;margin-bottom:12px}
-#time-bar{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#68d391,#2b6cb0)}
-#time-text{position:absolute;right:8px;top:0;font-size:12px;line-height:18px}
-#question-area{padding:8px 0}
-#q-text{font-weight:600;margin-bottom:8px}
-#choices{display:flex;flex-direction:column;gap:8px}
-.choice{padding:10px;border:1px solid #ddd;border-radius:6px;cursor:pointer}
-.choice:hover{background:#f0f6ff}
-.choice.disabled{opacity:0.7;pointer-events:none}
-#feedback{margin-top:12px;padding:8px;border-radius:6px;background:#f7fafc}
-#next-btn{margin-top:12px;padding:8px 12px;border-radius:6px}
-#records{margin-top:12px}
-footer{margin-top:12px;text-align:center;color:#666}
+#question-meta{margin-bottom:10px}
 
-@media(min-width:700px){.container{padding:32px}}
+#timer{position:relative;height:18px;background:rgba(255,255,255,0.45);border-radius:12px;overflow:hidden;margin-bottom:14px;border:1px solid rgba(255,255,255,0.6)}
+#time-bar{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#ffc2e6 0%,#caa3ff 50%,#9ec8ff 100%);transition:width .25s linear}
+#time-text{position:absolute;right:10px;top:0;font-size:12px;line-height:18px;color:rgba(43,37,64,0.9)}
+
+#question-area{padding:8px 0}
+#q-text{font-weight:700;margin-bottom:10px;font-size:18px}
+#choices{display:flex;flex-direction:column;gap:10px}
+.choice{padding:12px;border-radius:12px;cursor:pointer;border:1px solid rgba(120,100,140,0.12);background:rgba(255,255,255,0.6);box-shadow:0 6px 18px rgba(80,60,120,0.04)}
+.choice:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(80,60,120,0.08)}
+.choice.disabled{opacity:0.8;pointer-events:none}
+
+/* 答對/答錯樣式 */
+.choice.correct{background:linear-gradient(90deg, rgba(191,243,214,0.9), rgba(210,251,224,0.9));border-color:rgba(120,200,160,0.6);}
+.choice.wrong{background:linear-gradient(90deg, rgba(246,194,201,0.95), rgba(255,230,235,0.95));border-color:rgba(220,140,150,0.6);}
+
+#feedback{margin-top:12px;padding:10px;border-radius:12px;background:rgba(255,255,255,0.6)}
+#feedback.correct{background:var(--mint);color:#043826}
+#feedback.wrong{background:var(--mist-rose);color:#5b1620}
+
+#next-btn{margin-top:12px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,0.6);border:1px solid rgba(150,120,180,0.08)}
+#restart-btn{margin-top:10px;padding:10px 14px;border-radius:12px;background:var(--accent-gradient);color:#fff;border:none}
+
+#records{margin-top:12px}
+footer{margin-top:12px;text-align:center;color:rgba(43,37,64,0.6)}
+
+@media(min-width:700px){.container{padding:36px}}
+
+/* 小星星裝飾 */
+.screen::after{
+	content:"✦";position:absolute;right:18px;top:-10px;font-size:22px;color:rgba(255,255,255,0.6);transform:rotate(20deg);pointer-events:none
+}
+
