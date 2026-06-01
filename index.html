@@ -4,71 +4,117 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>高中化學晶體綜合比較問答遊戲</title>
+  <meta name="description" content="高中化學晶體百科與問答遊戲：離子晶體、共價網狀、分子晶體、金屬晶體的介紹與比較">
+  <!-- 引入 Google Fonts：Noto Serif TC 用於中文襯線字體 -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>高中化學晶體綜合比較問答遊戲</h1>
+      <h1>高中化學晶體綜合比較</h1>
+      <!-- 導覽列：在「問答遊戲」與「晶體百科」之間切換 -->
+      <nav id="main-nav" class="tab-nav">
+        <button class="tab-btn active" data-tab="game">🎮 問答遊戲</button>
+        <button class="tab-btn" data-tab="wiki">📖 晶體百科</button>
+      </nav>
     </header>
 
     <main>
-      <section id="start-screen" class="screen">
-        <h2>開始</h2>
-        <div class="mode-select">
-          <label><input type="radio" name="mode" value="single" checked> 單人</label>
-          <label><input type="radio" name="mode" value="duo"> 雙人</label>
-        </div>
-        <div class="names">
-          <label>玩家一名稱： <input id="player1" placeholder="玩家1"/></label>
-          <label id="player2-label">玩家二名稱： <input id="player2" placeholder="玩家2" disabled/></label>
-        </div>
-        <div class="count-select">
-          <label>題數：
-            <select id="qcount">
-              <option value="5">5</option>
-              <option value="10" selected>10</option>
-              <option value="15">15</option>
-              <option value="20">20</option>
-            </select>
-          </label>
-        </div>
-        <button id="start-btn">開始遊戲</button>
-      </section>
+      <!-- ============ 遊戲分頁 ============ -->
+      <div id="tab-game" class="tab-content active">
+        <section id="start-screen" class="screen">
+          <h2>開始</h2>
+          <div class="mode-select">
+            <label><input type="radio" name="mode" value="single" checked> 單人</label>
+            <label><input type="radio" name="mode" value="duo"> 雙人</label>
+          </div>
+          <div class="names">
+            <label>玩家一名稱： <input id="player1" placeholder="玩家1"/></label>
+            <label id="player2-label">玩家二名稱： <input id="player2" placeholder="玩家2" disabled/></label>
+          </div>
+          <div class="count-select">
+            <label>題數：
+              <select id="qcount">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+              </select>
+            </label>
+          </div>
+          <button id="start-btn">開始遊戲</button>
+        </section>
 
-      <section id="game-screen" class="screen hidden">
-        <div class="game-header">
-          <div id="player-indicator"></div>
-          <div id="score-display">分數: 0</div>
-        </div>
-        <div id="question-meta">題號: <span id="q-index">0</span>/<span id="q-total">0</span></div>
-        <div id="timer">
-          <div id="time-bar"></div>
-          <div id="time-text">15s</div>
-        </div>
-        <div id="question-area">
-          <div id="q-text"></div>
-          <div id="choices"></div>
-        </div>
-        <div id="feedback" class="hidden"></div>
-        <div class="controls">
-          <button id="next-btn" class="hidden">下一題</button>
-        </div>
-      </section>
+        <section id="game-screen" class="screen hidden">
+          <div class="game-header">
+            <div id="player-indicator"></div>
+            <div id="score-display">分數: 0</div>
+          </div>
+          <div id="question-meta">題號: <span id="q-index">0</span>/<span id="q-total">0</span></div>
+          <div id="timer">
+            <div id="time-bar"></div>
+            <div id="time-text">15s</div>
+          </div>
+          <div id="question-area">
+            <div id="q-text"></div>
+            <div id="choices"></div>
+          </div>
+          <div id="feedback" class="hidden"></div>
+          <div class="controls">
+            <button id="next-btn" class="hidden">下一題</button>
+          </div>
+        </section>
 
-      <section id="result-screen" class="screen hidden">
-        <h2>遊戲結果</h2>
-        <div id="summary"></div>
-        <div id="records"></div>
-        <button id="restart-btn">回到開始</button>
-      </section>
+        <section id="result-screen" class="screen hidden">
+          <h2>遊戲結果</h2>
+          <div id="summary"></div>
+          <div id="records"></div>
+          <button id="restart-btn">回到開始</button>
+        </section>
+      </div>
+
+      <!-- ============ 晶體百科分頁 ============ -->
+      <div id="tab-wiki" class="tab-content">
+        <!-- 晶體介紹卡片區 -->
+        <section class="screen wiki-section">
+          <h2 class="wiki-title">📚 四大晶體類型介紹</h2>
+          <p class="wiki-subtitle">點擊任一卡片展開詳細說明</p>
+          <div id="crystal-cards" class="crystal-cards-grid">
+            <!-- 由 JavaScript 動態生成 -->
+          </div>
+        </section>
+
+        <!-- 綜合比較表格區 -->
+        <section class="screen wiki-section" style="margin-top:20px">
+          <h2 class="wiki-title">📊 晶體綜合比較表</h2>
+          <div class="table-wrapper">
+            <table id="comparison-table" class="comparison-table">
+              <!-- 由 JavaScript 動態生成 -->
+            </table>
+          </div>
+        </section>
+
+        <!-- 特殊案例區 -->
+        <section class="screen wiki-section" style="margin-top:20px">
+          <h2 class="wiki-title">⚡ 特殊案例</h2>
+          <p class="wiki-subtitle">考試重點：這些物質的性質常被混淆或出成陷阱題</p>
+          <div id="special-cases" class="special-cases">
+            <!-- 由 JavaScript 動態生成 -->
+          </div>
+        </section>
+      </div>
     </main>
+
     <footer>
       <small>題庫範圍：離子晶體 / 共價網狀 / 分子晶體 / 金屬晶體（含石墨、SiO₂）</small>
     </footer>
   </div>
+
+  <!-- 載入資料與邏輯 -->
+  <script src="crystals.js"></script>
   <script src="questions.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
+

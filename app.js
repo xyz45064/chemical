@@ -1,4 +1,8 @@
-// 遊戲主邏輯
+// ====================================================================
+// 遊戲主邏輯 + 晶體百科渲染
+// ====================================================================
+
+// --- DOM 元素快取 ---
 const EL = {
   startScreen: document.getElementById('start-screen'),
   gameScreen: document.getElementById('game-screen'),
@@ -24,6 +28,7 @@ const EL = {
   records: document.getElementById('records')
 };
 
+// --- 遊戲狀態 ---
 let state = {
   mode: 'single',
   players: [],
@@ -38,13 +43,183 @@ let state = {
   currentPlayer: 0
 };
 
+// ====================================================================
+// 初始化：綁定事件 + 渲染晶體百科
+// ====================================================================
 function init() {
-  // mode toggle
+  // 遊戲模式切換（單人/雙人）
   for (let r of EL.modeRadios) r.addEventListener('change', onModeChange);
   EL.startBtn.addEventListener('click', startGame);
   EL.restartBtn.addEventListener('click', () => location.reload());
   EL.nextBtn.addEventListener('click', nextQuestion);
+
+  // 分頁導覽按鈕
+  initTabNavigation();
+
+  // 渲染晶體百科內容（介紹卡片、比較表格、特殊案例）
+  renderCrystalCards();
+  renderComparisonTable();
+  renderSpecialCases();
 }
+
+// ====================================================================
+// 分頁導覽邏輯
+// ====================================================================
+function initTabNavigation() {
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // 取得點擊的分頁名稱（game 或 wiki）
+      const targetTab = btn.dataset.tab;
+
+      // 移除所有按鈕的 active 狀態，再加到點擊的按鈕
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // 隱藏所有分頁內容，再顯示目標分頁
+      tabContents.forEach(tc => tc.classList.remove('active'));
+      document.getElementById(`tab-${targetTab}`).classList.add('active');
+    });
+  });
+}
+
+// ====================================================================
+// 晶體介紹卡片渲染
+// ====================================================================
+function renderCrystalCards() {
+  const container = document.getElementById('crystal-cards');
+  if (!container) return;
+
+  // 遍歷每一種晶體資料，產生一張可展開的卡片
+  CRYSTAL_DATA.forEach(crystal => {
+    const card = document.createElement('div');
+    card.className = 'crystal-card';
+    // 設定卡片背景漸層
+    card.style.background = crystal.gradient;
+
+    // 頂部裝飾條的顏色
+    card.style.setProperty('--card-color', crystal.color);
+
+    card.innerHTML = `
+      <!-- 卡片標題列：圖示 + 名稱 + 展開箭頭 -->
+      <div class="crystal-card-header">
+        <span class="crystal-card-icon">${crystal.icon}</span>
+        <span class="crystal-card-name">${crystal.name}</span>
+        <span class="crystal-card-toggle">▼</span>
+      </div>
+      <!-- 摘要文字（始終顯示） -->
+      <div class="crystal-card-summary">${crystal.summary}</div>
+      <!-- 展開後的詳細內容 -->
+      <div class="crystal-card-detail">
+        <div class="crystal-card-desc">${crystal.description}</div>
+        <!-- 屬性標籤 -->
+        <div class="crystal-props">
+          <span class="crystal-prop">
+            <span class="crystal-prop-label">組成粒子：</span>
+            <span class="crystal-prop-value">${crystal.particles}</span>
+          </span>
+          <span class="crystal-prop">
+            <span class="crystal-prop-label">鍵結：</span>
+            <span class="crystal-prop-value">${crystal.bondType}</span>
+          </span>
+          <span class="crystal-prop">
+            <span class="crystal-prop-label">熔沸點：</span>
+            <span class="crystal-prop-value">${crystal.meltingPoint}</span>
+          </span>
+          <span class="crystal-prop">
+            <span class="crystal-prop-label">導電性：</span>
+            <span class="crystal-prop-value">${crystal.conductivity}</span>
+          </span>
+          <span class="crystal-prop">
+            <span class="crystal-prop-label">硬度：</span>
+            <span class="crystal-prop-value">${crystal.hardness}</span>
+          </span>
+          <span class="crystal-prop">
+            <span class="crystal-prop-label">溶解性：</span>
+            <span class="crystal-prop-value">${crystal.solubility}</span>
+          </span>
+        </div>
+        <!-- 代表範例 -->
+        <div class="crystal-examples">
+          ${crystal.examples.map(ex =>
+            `<span class="crystal-example-tag" style="background:${crystal.color}">${ex}</span>`
+          ).join('')}
+        </div>
+      </div>
+    `;
+
+    // 點擊卡片時切換展開/收合
+    card.addEventListener('click', () => {
+      card.classList.toggle('expanded');
+    });
+
+    container.appendChild(card);
+  });
+}
+
+// ====================================================================
+// 比較表格渲染
+// ====================================================================
+function renderComparisonTable() {
+  const table = document.getElementById('comparison-table');
+  if (!table) return;
+
+  // 建立表頭 <thead>
+  const thead = document.createElement('thead');
+  const headRow = document.createElement('tr');
+  COMPARISON_TABLE.headers.forEach(h => {
+    const th = document.createElement('th');
+    th.textContent = h;
+    headRow.appendChild(th);
+  });
+  thead.appendChild(headRow);
+  table.appendChild(thead);
+
+  // 建立表身 <tbody>
+  const tbody = document.createElement('tbody');
+  COMPARISON_TABLE.rows.forEach(row => {
+    const tr = document.createElement('tr');
+    row.forEach(cell => {
+      const td = document.createElement('td');
+      td.textContent = cell;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+}
+
+// ====================================================================
+// 特殊案例渲染
+// ====================================================================
+function renderSpecialCases() {
+  const container = document.getElementById('special-cases');
+  if (!container) return;
+
+  SPECIAL_CASES.forEach(sc => {
+    const card = document.createElement('div');
+    card.className = 'special-card';
+
+    card.innerHTML = `
+      <div class="special-card-header">
+        <span class="special-card-icon">${sc.icon}</span>
+        <span class="special-card-name">${sc.name}</span>
+      </div>
+      <div class="special-card-desc">${sc.description}</div>
+      <ul class="special-key-points">
+        ${sc.keyPoints.map(kp => `<li>${kp}</li>`).join('')}
+      </ul>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+// ====================================================================
+// 以下為原有的遊戲邏輯（未修改）
+// ====================================================================
 
 function onModeChange(){
   const mode = Array.from(EL.modeRadios).find(r=>r.checked).value;
@@ -61,7 +236,7 @@ function startGame(){
   const p2 = EL.player2.value.trim()||'玩家2';
   state.players = state.mode==='duo'?[p1,p2]:[p1];
   state.totalQuestions = parseInt(EL.qcount.value,10);
-  // pick questions
+  // 隨機取題
   state.questions = shuffleArray(QUESTION_BANK).slice(0,state.totalQuestions);
   state.index = 0;
   state.totalScore = state.mode==='duo'?[0,0]:[0];
@@ -83,7 +258,7 @@ function renderQuestion(){
   EL.choices.innerHTML = '';
   EL.feedback.classList.add('hidden');
   EL.nextBtn.classList.add('hidden');
-  // choices
+  // 建立選項按鈕
   q.choices.forEach((c,i)=>{
     const d = document.createElement('div');
     d.className = 'choice';
@@ -92,7 +267,7 @@ function renderQuestion(){
     d.addEventListener('click', onChoose);
     EL.choices.appendChild(d);
   });
-  // timer
+  // 啟動倒數計時
   state.timeLeft = state.timeLimit;
   updateTimerUI();
   startTimer();
@@ -133,7 +308,7 @@ function handleAnswer(chosenIdx, isTimeout){
   if(!isTimeout && chosenIdx===correct){
     score = Math.round(secsLeft/15*10);
   }
-  // record
+  // 記錄答題
   const playerName = state.players[state.currentPlayer];
   state.records.push({
     q: q.q,
@@ -144,45 +319,43 @@ function handleAnswer(chosenIdx, isTimeout){
     player: playerName,
     score
   });
-  // update player score
+  // 更新分數
   if(state.mode==='duo'){
     state.totalScore[state.currentPlayer] += score;
   } else {
     state.totalScore[0] += score;
   }
-  // disable choices and mark correct / wrong / dim states
+  // 標記選項狀態：正確/錯誤/淡化
   Array.from(EL.choices.children).forEach((ch)=>{
     ch.classList.add('disabled');
     const idx = parseInt(ch.dataset.idx,10);
     if(chosenIdx === null){
-      // timeout: show correct, dim others
+      // 超時：顯示正確答案，其餘淡化
       if(idx === correct) ch.classList.add('correct');
       else ch.classList.add('dim');
     } else if(chosenIdx === correct){
-      // answered correctly: mark chosen as correct, dim others
+      // 答對：標記正確，其餘淡化
       if(idx === correct) ch.classList.add('correct');
       else ch.classList.add('dim');
     } else {
-      // answered incorrectly: chosen wrong -> red, correct -> green, others dim
+      // 答錯：標記錯誤(紅) + 正確(綠)，其餘淡化
       if(idx === correct) ch.classList.add('correct');
       else if(idx === chosenIdx) ch.classList.add('wrong');
       else ch.classList.add('dim');
     }
   });
-  // show feedback
+  // 顯示回饋與解析
   const correctText = `正確答案：${String.fromCharCode(65+correct)}. ${q.choices[correct]}`;
   const chosenText = chosenIdx===null? '（未作答或超時）': `你的答案：${String.fromCharCode(65+chosenIdx)}. ${q.choices[chosenIdx]}`;
   EL.feedback.innerHTML = `<div><strong>${chosenIdx===correct? '答對':'答錯'}</strong> （得分：${score}）</div><div>${chosenText}</div><div>${correctText}</div><div style="margin-top:6px;color:#333">解析：${q.explain}</div>`;
   EL.feedback.classList.remove('hidden');
   EL.nextBtn.classList.remove('hidden');
   EL.scoreDisplay.textContent = '分數: ' + (state.mode==='duo'? state.totalScore[state.currentPlayer] : state.totalScore[0]);
-  // for duo, still show current player's cumulative only; next will switch
 }
 
 function nextQuestion(){
-  // advance player if duo
+  // 雙人模式：切換玩家
   if(state.mode==='duo'){
-    // switch player
     state.currentPlayer = (state.currentPlayer+1) % 2;
   }
   state.index++;
@@ -196,7 +369,7 @@ function nextQuestion(){
 function endGame(){
   EL.gameScreen.classList.add('hidden');
   EL.resultScreen.classList.remove('hidden');
-  // summary
+  // 結果摘要
   if(state.mode==='duo'){
     const p0 = state.players[0];
     const p1 = state.players[1];
@@ -210,7 +383,7 @@ function endGame(){
     const rate = Math.round(correctCount/state.totalQuestions*100);
     EL.summary.innerHTML = `<div>總分：${total}</div><div>答對：${correctCount} / ${state.totalQuestions}</div><div>正確率：${rate}%</div>`;
   }
-  // records table
+  // 答題紀錄列表
   EL.records.innerHTML = '<h3>答題紀錄</h3>';
   const ul = document.createElement('ul');
   state.records.forEach((r,i)=>{
@@ -222,7 +395,9 @@ function endGame(){
   EL.records.appendChild(ul);
 }
 
-// util
+// ====================================================================
+// 工具函式：Fisher-Yates 洗牌演算法
+// ====================================================================
 function shuffleArray(a){
   const arr = a.slice();
   for(let i=arr.length-1;i>0;i--){
@@ -232,4 +407,5 @@ function shuffleArray(a){
   return arr;
 }
 
+// 啟動應用
 init();
