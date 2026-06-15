@@ -20,6 +20,7 @@
       <nav id="main-nav" class="tab-nav">
         <button class="tab-btn active" data-tab="game">🎮 問答遊戲</button>
         <button class="tab-btn" data-tab="wiki">📖 晶體百科</button>
+        <button class="tab-btn" data-tab="lab">🧪 互動實驗室</button>
       </nav>
     </header>
 
@@ -101,6 +102,64 @@
           </div>
         </section>
       </div>
+
+      <!-- ============ 互動實驗室分頁 ============ -->
+      <div id="tab-lab" class="tab-content">
+        <section class="screen wiki-section lab-section">
+          <h2 class="wiki-title">🧪 晶體合成實驗室</h2>
+          <p class="wiki-subtitle">選擇兩個元素，看看它們會形成什麼晶體！</p>
+
+          <!-- 元素分類篩選器 -->
+          <div id="element-filters" class="element-filters">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="metal">金屬</button>
+            <button class="filter-btn" data-filter="nonmetal">非金屬</button>
+            <button class="filter-btn" data-filter="metalloid">類金屬</button>
+          </div>
+
+          <!-- 元素選取區 -->
+          <div id="element-grid" class="element-grid">
+            <!-- 由 JavaScript 動態生成 -->
+          </div>
+
+          <!-- 已選取的元素顯示與合成按鈕 -->
+          <div id="reaction-zone" class="reaction-zone">
+            <div class="reaction-slots">
+              <div id="slot-1" class="reaction-slot empty">
+                <span class="slot-label">元素 1</span>
+                <span class="slot-symbol">?</span>
+              </div>
+              <div class="reaction-operator">+</div>
+              <div id="slot-2" class="reaction-slot empty">
+                <span class="slot-label">元素 2</span>
+                <span class="slot-symbol">?</span>
+              </div>
+              <div class="reaction-operator reaction-arrow">=</div>
+              <div id="slot-result" class="reaction-slot result-slot empty">
+                <span class="slot-label">產物</span>
+                <span class="slot-symbol">?</span>
+              </div>
+            </div>
+            <div class="reaction-actions">
+              <button id="synthesize-btn" class="synthesize-btn" disabled>⚗️ 合成</button>
+              <button id="reset-lab-btn" class="reset-lab-btn">🔄 重置</button>
+            </div>
+          </div>
+
+          <!-- 合成結果顯示區 -->
+          <div id="result-panel" class="result-panel hidden">
+            <!-- 由 JavaScript 動態生成 -->
+          </div>
+
+          <!-- 合成歷史紀錄 -->
+          <div id="lab-history" class="lab-history hidden">
+            <h3 class="history-title">📋 實驗紀錄</h3>
+            <div id="history-list" class="history-list">
+              <!-- 由 JavaScript 動態生成 -->
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
 
     <footer>
@@ -111,6 +170,7 @@
   <!-- 載入資料與邏輯 -->
   <script src="crystals.js"></script>
   <script src="questions.js"></script>
+  <script src="lab.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
