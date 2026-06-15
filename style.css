@@ -491,6 +491,539 @@ footer{margin-top:12px;text-align:center;color:var(--text-dim)}
 }
 
 /* ====================================================================
+   互動實驗室 — 元素篩選器
+   ==================================================================== */
+.element-filters{
+	display:flex;
+	justify-content:center;
+	gap:6px;
+	margin-bottom:16px;
+	flex-wrap:wrap;
+}
+.filter-btn{
+	padding:7px 18px;
+	border:1px solid var(--border);
+	border-radius:20px;
+	background:rgba(255,255,255,0.06);
+	color:var(--text-dim);
+	cursor:pointer;
+	font-size:13px;
+	font-weight:700;
+	transition:all .2s ease;
+}
+.filter-btn:hover{
+	color:var(--text);
+	background:rgba(255,255,255,0.1);
+	transform:translateY(-1px);
+}
+.filter-btn.active{
+	background:var(--accent-gradient);
+	color:#fff;
+	border-color:transparent;
+	box-shadow:0 4px 12px rgba(168,85,247,0.2);
+}
+
+/* ====================================================================
+   互動實驗室 — 元素選取網格
+   ==================================================================== */
+.element-grid{
+	display:grid;
+	grid-template-columns:repeat(auto-fill, minmax(85px,1fr));
+	gap:8px;
+	margin-bottom:20px;
+}
+.element-tile{
+	position:relative;
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	justify-content:center;
+	padding:10px 6px 8px;
+	border-radius:12px;
+	border:1.5px solid rgba(255,255,255,0.1);
+	background:rgba(255,255,255,0.04);
+	cursor:pointer;
+	transition:all .25s ease;
+	overflow:hidden;
+}
+/* 元素磚塊頂部裝飾線 */
+.element-tile::before{
+	content:"";
+	position:absolute;
+	top:0;left:0;right:0;
+	height:3px;
+	border-radius:12px 12px 0 0;
+	opacity:0.5;
+	transition:opacity .25s ease;
+}
+/* 金屬元素 — 金色裝飾 */
+.element-metal::before{ background:linear-gradient(90deg,#f59e0b,#fb923c); }
+/* 非金屬元素 — 藍綠色裝飾 */
+.element-nonmetal::before{ background:linear-gradient(90deg,#22d3ee,#60a5fa); }
+/* 類金屬元素 — 紫色裝飾 */
+.element-metalloid::before{ background:linear-gradient(90deg,#8b5cf6,#a855f7); }
+
+.element-tile:hover{
+	transform:translateY(-3px);
+	box-shadow:0 8px 20px rgba(0,0,0,0.3);
+	border-color:rgba(255,255,255,0.2);
+	background:rgba(255,255,255,0.08);
+}
+.element-tile:hover::before{
+	opacity:1;
+}
+
+/* 元素符號（大字） */
+.element-symbol{
+	font-size:22px;
+	font-weight:700;
+	line-height:1.2;
+}
+/* 元素中文名 */
+.element-name{
+	font-size:11px;
+	color:rgba(255,255,255,0.7);
+	margin-top:2px;
+}
+/* 元素分類標籤 */
+.element-group{
+	font-size:9px;
+	color:rgba(255,255,255,0.35);
+	margin-top:1px;
+}
+
+/* 已選取的元素 */
+.element-tile.selected{
+	border-color:rgba(168,85,247,0.6);
+	background:rgba(168,85,247,0.15);
+	box-shadow:0 0 16px rgba(168,85,247,0.25);
+	transform:scale(1.05);
+}
+.element-tile.selected::after{
+	content:"✓";
+	position:absolute;
+	top:4px;right:6px;
+	font-size:11px;
+	font-weight:700;
+	color:#c084fc;
+}
+
+/* 篩選掉的元素（淡化隱藏） */
+.element-tile.filtered-out{
+	opacity:0.15;
+	pointer-events:none;
+	transform:scale(0.92);
+	filter:grayscale(80%);
+}
+
+/* ====================================================================
+   互動實驗室 — 反應欄位（選取 + 產物）
+   ==================================================================== */
+.reaction-zone{
+	margin:20px 0;
+	padding:20px;
+	border-radius:16px;
+	background:rgba(0,0,0,0.2);
+	border:1px solid var(--border);
+}
+.reaction-slots{
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	gap:12px;
+	flex-wrap:wrap;
+}
+.reaction-slot{
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	justify-content:center;
+	width:90px;
+	height:90px;
+	border-radius:16px;
+	border:2px dashed rgba(255,255,255,0.15);
+	background:rgba(255,255,255,0.03);
+	transition:all .35s ease;
+	position:relative;
+}
+.reaction-slot .slot-label{
+	font-size:10px;
+	color:rgba(255,255,255,0.4);
+	margin-bottom:4px;
+}
+.reaction-slot .slot-symbol{
+	font-size:28px;
+	font-weight:700;
+	color:rgba(255,255,255,0.25);
+}
+
+/* 已填入元素的欄位 */
+.reaction-slot.filled{
+	border-style:solid;
+	border-color:rgba(168,85,247,0.5);
+	background:rgba(168,85,247,0.08);
+}
+.reaction-slot.filled .slot-symbol{
+	color:#fff;
+	font-size:30px;
+}
+.reaction-slot.filled .slot-label{
+	color:rgba(255,255,255,0.7);
+}
+
+/* 反應式的 + 號和 = 號 */
+.reaction-operator{
+	font-size:24px;
+	font-weight:700;
+	color:rgba(255,255,255,0.3);
+	user-select:none;
+}
+.reaction-arrow{
+	font-size:28px;
+	color:rgba(168,85,247,0.5);
+}
+
+/* 結果欄位 */
+.result-slot{
+	border-style:dashed;
+	border-color:rgba(255,255,255,0.1);
+}
+.result-slot.success{
+	border-style:solid;
+	background:rgba(34,197,94,0.08);
+}
+.result-slot.success .slot-symbol{
+	color:#fff;
+	font-size:32px;
+}
+.result-slot.success .slot-label{
+	color:rgba(255,255,255,0.8);
+	font-size:9px;
+	max-width:80px;
+	text-align:center;
+	overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap;
+}
+.result-slot.fail{
+	border-style:solid;
+	border-color:rgba(239,68,68,0.4);
+	background:rgba(239,68,68,0.08);
+}
+.result-slot.fail .slot-symbol{
+	color:#fca5a5;
+}
+
+/* 合成中動畫 */
+.result-slot.synthesizing{
+	border-style:solid;
+	border-color:rgba(250,204,21,0.6);
+	background:rgba(250,204,21,0.08);
+	animation:synthesizePulse .6s ease infinite;
+}
+.result-slot.synthesizing .slot-symbol{
+	color:#facc15;
+	animation:sparkle .4s ease infinite;
+}
+.result-slot.synthesizing .slot-label{
+	color:#facc15;
+}
+
+@keyframes synthesizePulse{
+	0%,100%{ box-shadow:0 0 10px rgba(250,204,21,0.2); transform:scale(1); }
+	50%{ box-shadow:0 0 30px rgba(250,204,21,0.4); transform:scale(1.05); }
+}
+@keyframes sparkle{
+	0%,100%{ opacity:1; transform:scale(1); }
+	50%{ opacity:0.5; transform:scale(1.3) rotate(20deg); }
+}
+
+/* 操作按鈕列 */
+.reaction-actions{
+	display:flex;
+	justify-content:center;
+	gap:10px;
+	margin-top:16px;
+}
+.synthesize-btn{
+	padding:10px 28px;
+	border:none;
+	border-radius:14px;
+	background:var(--accent-gradient);
+	color:#fff;
+	font-weight:700;
+	font-size:15px;
+	cursor:pointer;
+	box-shadow:0 6px 20px rgba(168,85,247,0.25);
+	transition:all .2s ease;
+}
+.synthesize-btn:hover:not(:disabled){
+	transform:translateY(-2px);
+	box-shadow:0 10px 28px rgba(168,85,247,0.35);
+}
+.synthesize-btn:disabled{
+	opacity:0.4;
+	cursor:not-allowed;
+	box-shadow:none;
+}
+.reset-lab-btn{
+	padding:10px 20px;
+	border:1px solid var(--border);
+	border-radius:14px;
+	background:rgba(255,255,255,0.06);
+	color:var(--text-dim);
+	font-size:14px;
+	cursor:pointer;
+	transition:all .2s ease;
+}
+.reset-lab-btn:hover{
+	background:rgba(255,255,255,0.1);
+	color:var(--text);
+	transform:translateY(-1px);
+}
+
+/* ====================================================================
+   互動實驗室 — 結果面板
+   ==================================================================== */
+.result-panel{
+	margin-top:20px;
+}
+.result-panel.hidden{
+	display:none;
+}
+
+@keyframes resultSlideIn{
+	from{ opacity:0; transform:translateY(20px); }
+	to{ opacity:1; transform:translateY(0); }
+}
+
+.result-card{
+	border-radius:18px;
+	padding:22px;
+	border:1px solid rgba(255,255,255,0.1);
+	box-shadow:0 10px 30px rgba(0,0,0,0.25);
+}
+.result-header{
+	display:flex;
+	align-items:center;
+	gap:14px;
+	margin-bottom:14px;
+}
+.result-icon{
+	font-size:42px;
+	line-height:1;
+}
+.result-title-group{
+	display:flex;
+	flex-direction:column;
+	gap:4px;
+}
+.result-name{
+	margin:0;
+	font-size:20px;
+	color:#fff;
+}
+.result-crystal-type{
+	display:inline-block;
+	padding:3px 12px;
+	border-radius:10px;
+	font-size:12px;
+	font-weight:700;
+	color:#fff;
+	width:fit-content;
+}
+
+/* 反應式 */
+.result-equation{
+	padding:10px 14px;
+	border-radius:10px;
+	background:rgba(0,0,0,0.2);
+	margin-bottom:12px;
+	display:flex;
+	align-items:center;
+	gap:8px;
+	flex-wrap:wrap;
+}
+.equation-label{
+	font-size:13px;
+	font-weight:700;
+	color:rgba(255,255,255,0.5);
+}
+.equation-text{
+	font-size:15px;
+	font-weight:700;
+	color:#e9d5ff;
+	letter-spacing:0.5px;
+}
+
+/* 詳細說明 */
+.result-description{
+	font-size:14px;
+	line-height:1.8;
+	color:rgba(255,255,255,0.85);
+	margin-bottom:14px;
+}
+
+/* 性質標籤 */
+.result-properties{
+	margin-bottom:12px;
+}
+.properties-label{
+	font-size:13px;
+	font-weight:700;
+	color:rgba(255,255,255,0.5);
+	display:block;
+	margin-bottom:8px;
+}
+.properties-tags{
+	display:flex;
+	flex-wrap:wrap;
+	gap:6px;
+}
+.property-tag{
+	padding:4px 12px;
+	border-radius:16px;
+	font-size:12px;
+	color:rgba(255,255,255,0.85);
+	background:rgba(0,0,0,0.2);
+	border:1px solid rgba(255,255,255,0.1);
+}
+
+/* 結構提示 */
+.result-structure{
+	padding:10px 14px;
+	border-radius:10px;
+	background:rgba(168,85,247,0.08);
+	border-left:3px solid #a855f7;
+	margin-bottom:10px;
+	display:flex;
+	align-items:center;
+	gap:8px;
+	flex-wrap:wrap;
+}
+.structure-label{
+	font-size:13px;
+	font-weight:700;
+	color:#c4b5fd;
+}
+.structure-text{
+	font-size:13px;
+	color:rgba(255,255,255,0.8);
+}
+
+/* 推斷提示 */
+.result-inferred{
+	display:flex;
+	align-items:center;
+	gap:8px;
+	padding:10px 14px;
+	border-radius:10px;
+	background:rgba(250,204,21,0.08);
+	border:1px solid rgba(250,204,21,0.2);
+	font-size:12.5px;
+	color:rgba(250,204,21,0.85);
+}
+.inferred-icon{
+	font-size:18px;
+}
+
+/* 合成失敗提示 */
+.result-error{
+	text-align:center;
+	padding:20px;
+	color:var(--text-dim);
+}
+.result-error-icon{
+	font-size:40px;
+	display:block;
+	margin-bottom:10px;
+}
+.result-error p{
+	font-size:14px;
+	line-height:1.7;
+	margin:0;
+}
+
+/* ====================================================================
+   互動實驗室 — 歷史紀錄
+   ==================================================================== */
+.lab-history{
+	margin-top:20px;
+	padding:16px;
+	border-radius:16px;
+	background:rgba(0,0,0,0.15);
+	border:1px solid var(--border);
+}
+.lab-history.hidden{
+	display:none;
+}
+.history-title{
+	margin:0 0 12px;
+	font-size:16px;
+	color:#e9d5ff;
+}
+.history-list{
+	display:flex;
+	flex-direction:column;
+	gap:8px;
+}
+.history-item{
+	display:flex;
+	align-items:center;
+	gap:10px;
+	padding:10px 14px;
+	border-radius:12px;
+	background:rgba(255,255,255,0.04);
+	border:1px solid rgba(255,255,255,0.06);
+	cursor:pointer;
+	transition:all .2s ease;
+	flex-wrap:wrap;
+}
+.history-item:hover{
+	background:rgba(255,255,255,0.08);
+	transform:translateX(4px);
+}
+.history-elements{
+	display:flex;
+	align-items:center;
+	gap:4px;
+}
+.history-el{
+	font-weight:700;
+	font-size:15px;
+	color:#c4b5fd;
+}
+.history-plus{
+	font-size:13px;
+	color:rgba(255,255,255,0.3);
+}
+.history-arrow{
+	font-size:14px;
+	color:rgba(255,255,255,0.3);
+}
+.history-result{
+	display:flex;
+	align-items:center;
+	gap:5px;
+}
+.history-icon{
+	font-size:16px;
+}
+.history-product{
+	font-size:13px;
+	color:rgba(255,255,255,0.8);
+	font-weight:700;
+}
+.history-type{
+	margin-left:auto;
+	padding:2px 10px;
+	border-radius:8px;
+	font-size:11px;
+	font-weight:700;
+	color:#fff;
+}
+
+/* ====================================================================
    RWD 回應式設計：小螢幕時卡片改為單欄
    ==================================================================== */
 @media(max-width:680px){
@@ -504,6 +1037,33 @@ footer{margin-top:12px;text-align:center;color:var(--text-dim)}
 	.comparison-table tbody td{
 		padding:8px 8px;
 	}
+	/* 實驗室 RWD */
+	.element-grid{
+		grid-template-columns:repeat(auto-fill, minmax(70px,1fr));
+		gap:6px;
+	}
+	.reaction-slot{
+		width:72px;
+		height:72px;
+	}
+	.reaction-slots{
+		gap:8px;
+	}
+	.result-header{
+		flex-direction:column;
+		text-align:center;
+	}
+	.result-title-group{
+		align-items:center;
+	}
+	.history-item{
+		font-size:12px;
+	}
+	.history-type{
+		margin-left:0;
+		margin-top:4px;
+	}
 }
 
 @media(min-width:700px){.container{padding:36px}}
+

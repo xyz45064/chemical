@@ -60,6 +60,9 @@ function init() {
   renderCrystalCards();
   renderComparisonTable();
   renderSpecialCases();
+
+  // 初始化互動實驗室（元素合成功能）
+  initLab();
 }
 
 // ====================================================================
@@ -407,5 +410,421 @@ function shuffleArray(a){
   return arr;
 }
 
+// ====================================================================
+// 互動實驗室 — 元素合成邏輯
+// ====================================================================
+
+// --- 實驗室狀態 ---
+const labState = {
+  selectedElements: [],   // 已選取的元素（最多 2 個）
+  history: [],            // 合成歷史紀錄
+  currentFilter: 'all'    // 目前的元素篩選條件
+};
+
+/**
+ * 初始化互動實驗室
+ * 渲染元素網格、綁定篩選器與操作按鈕
+ */
+function initLab() {
+  renderElementGrid();
+  bindFilterButtons();
+  bindLabButtons();
+}
+
+/**
+ * 渲染元素選取網格
+ * 根據 ELEMENT_POOL 動態生成元素按鈕
+ */
+function renderElementGrid() {
+  const grid = document.getElementById('element-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  ELEMENT_POOL.forEach(el => {
+    const tile = document.createElement('button');
+    tile.className = `element-tile element-${el.category}`;
+    tile.dataset.symbol = el.symbol;
+
+    // 若目前有篩選條件且不符合，加上 hidden class
+    if (labState.currentFilter !== 'all' && el.category !== labState.currentFilter) {
+      tile.classList.add('filtered-out');
+    }
+
+    // 若已被選取，加上 selected class
+    if (labState.selectedElements.some(s => s.symbol === el.symbol)) {
+      tile.classList.add('selected');
+    }
+
+    // 元素磚塊的 HTML 結構：符號 + 名稱 + 分類標籤
+    tile.innerHTML = `
+      <span class="element-symbol" style="color:${el.color}">${el.symbol}</span>
+      <span class="element-name">${el.name}</span>
+      <span class="element-group">${el.group}</span>
+    `;
+
+    // 綁定點擊事件
+    tile.addEventListener('click', () => onElementClick(el));
+
+    grid.appendChild(tile);
+  });
+}
+
+/**
+ * 綁定元素分類篩選按鈕
+ */
+function bindFilterButtons() {
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // 切換 active 狀態
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // 更新篩選狀態並重新渲染
+      labState.currentFilter = btn.dataset.filter;
+      renderElementGrid();
+    });
+  });
+}
+
+/**
+ * 綁定合成與重置按鈕
+ */
+function bindLabButtons() {
+  const synthesizeBtn = document.getElementById('synthesize-btn');
+  const resetBtn = document.getElementById('reset-lab-btn');
+
+  if (synthesizeBtn) {
+    synthesizeBtn.addEventListener('click', performSynthesis);
+  }
+  if (resetBtn) {
+    resetBtn.addEventListener('click', resetLab);
+  }
+}
+
+/**
+ * 元素被點擊時的處理邏輯
+ * @param {Object} el - 被點擊的元素物件
+ */
+function onElementClick(el) {
+  // 檢查是否已選取此元素（若已選取則取消）
+  const existingIdx = labState.selectedElements.findIndex(s => s.symbol === el.symbol);
+  if (existingIdx !== -1) {
+    labState.selectedElements.splice(existingIdx, 1);
+    updateReactionSlots();
+    renderElementGrid();
+    return;
+  }
+
+  // 最多選 2 個
+  if (labState.selectedElements.length >= 2) return;
+
+  labState.selectedElements.push(el);
+  updateReactionSlots();
+  renderElementGrid();
+}
+
+/**
+ * 更新反應欄位（顯示已選取的元素）
+ */
+function updateReactionSlots() {
+  const slot1 = document.getElementById('slot-1');
+  const slot2 = document.getElementById('slot-2');
+  const resultSlot = document.getElementById('slot-result');
+  const synthesizeBtn = document.getElementById('synthesize-btn');
+
+  // 重置結果欄位
+  resultSlot.className = 'reaction-slot result-slot empty';
+  resultSlot.querySelector('.slot-symbol').textContent = '?';
+  resultSlot.querySelector('.slot-label').textContent = '產物';
+  resultSlot.style.borderColor = '';
+
+  // 更新元素 1
+  if (labState.selectedElements.length >= 1) {
+    const el1 = labState.selectedElements[0];
+    slot1.className = 'reaction-slot filled';
+    slot1.querySelector('.slot-symbol').textContent = el1.symbol;
+    slot1.querySelector('.slot-label').textContent = el1.name;
+    slot1.style.borderColor = el1.color;
+    slot1.style.boxShadow = `0 0 20px ${el1.color}40`;
+  } else {
+    slot1.className = 'reaction-slot empty';
+    slot1.querySelector('.slot-symbol').textContent = '?';
+    slot1.querySelector('.slot-label').textContent = '元素 1';
+    slot1.style.borderColor = '';
+    slot1.style.boxShadow = '';
+  }
+
+  // 更新元素 2
+  if (labState.selectedElements.length >= 2) {
+    const el2 = labState.selectedElements[1];
+    slot2.className = 'reaction-slot filled';
+    slot2.querySelector('.slot-symbol').textContent = el2.symbol;
+    slot2.querySelector('.slot-label').textContent = el2.name;
+    slot2.style.borderColor = el2.color;
+    slot2.style.boxShadow = `0 0 20px ${el2.color}40`;
+  } else {
+    slot2.className = 'reaction-slot empty';
+    slot2.querySelector('.slot-symbol').textContent = '?';
+    slot2.querySelector('.slot-label').textContent = '元素 2';
+    slot2.style.borderColor = '';
+    slot2.style.boxShadow = '';
+  }
+
+  // 啟用/停用合成按鈕
+  if (synthesizeBtn) {
+    synthesizeBtn.disabled = labState.selectedElements.length < 2;
+  }
+}
+
+/**
+ * 執行合成：查詢反應資料庫或推斷晶體類型，並以動畫顯示結果
+ */
+function performSynthesis() {
+  if (labState.selectedElements.length < 2) return;
+
+  const el1 = labState.selectedElements[0];
+  const el2 = labState.selectedElements[1];
+
+  // 先從資料庫查詢
+  let reaction = lookupReaction(el1.symbol, el2.symbol);
+
+  // 若資料庫沒有，用通用規則推斷
+  if (!reaction) {
+    const inferred = inferCrystalType(el1, el2);
+    if (inferred) {
+      reaction = {
+        product: `${el1.symbol} + ${el2.symbol} 化合物`,
+        name: `${el1.name}${el2.name}化合物（推斷）`,
+        crystalType: inferred.crystalType,
+        icon: inferred.icon,
+        color: inferred.color,
+        equation: `${el1.symbol} + ${el2.symbol} → ?`,
+        description: inferred.description,
+        properties: inferred.properties,
+        structureHint: '依化合物種類而定',
+        isInferred: true
+      };
+    }
+  }
+
+  // 播放合成動畫
+  playSynthesisAnimation(reaction);
+}
+
+/**
+ * 播放合成動畫並顯示結果
+ * @param {Object|null} reaction - 反應結果物件
+ */
+function playSynthesisAnimation(reaction) {
+  const resultSlot = document.getElementById('slot-result');
+  const resultPanel = document.getElementById('result-panel');
+  const synthesizeBtn = document.getElementById('synthesize-btn');
+
+  // 停用合成按鈕，避免重複點擊
+  synthesizeBtn.disabled = true;
+
+  // 反應欄位閃爍動畫
+  resultSlot.className = 'reaction-slot result-slot synthesizing';
+  resultSlot.querySelector('.slot-symbol').textContent = '⚡';
+  resultSlot.querySelector('.slot-label').textContent = '合成中...';
+
+  // 延遲後顯示結果
+  setTimeout(() => {
+    if (reaction) {
+      // 合成成功
+      resultSlot.className = 'reaction-slot result-slot success';
+      resultSlot.querySelector('.slot-symbol').textContent = reaction.icon;
+      resultSlot.querySelector('.slot-label').textContent = reaction.product;
+      resultSlot.style.borderColor = reaction.color;
+      resultSlot.style.boxShadow = `0 0 30px ${reaction.color}60`;
+
+      // 顯示詳細結果面板
+      showResultPanel(reaction);
+
+      // 加入歷史紀錄
+      addToHistory(reaction);
+    } else {
+      // 找不到反應
+      resultSlot.className = 'reaction-slot result-slot fail';
+      resultSlot.querySelector('.slot-symbol').textContent = '❌';
+      resultSlot.querySelector('.slot-label').textContent = '無資料';
+
+      resultPanel.innerHTML = `
+        <div class="result-error">
+          <span class="result-error-icon">🔬</span>
+          <p>目前資料庫中沒有這兩個元素的組合資料。<br>試試其他元素組合吧！</p>
+        </div>
+      `;
+      resultPanel.classList.remove('hidden');
+    }
+
+    synthesizeBtn.disabled = false;
+  }, 1200);
+}
+
+/**
+ * 顯示合成結果的詳細面板
+ * @param {Object} reaction - 反應結果物件
+ */
+function showResultPanel(reaction) {
+  const panel = document.getElementById('result-panel');
+
+  // 根據晶體類型對應不同的背景漸層
+  const gradientMap = {
+    '離子晶體': 'linear-gradient(135deg, rgba(185,28,90,0.3) 0%, rgba(232,69,122,0.15) 100%)',
+    '共價網狀晶體': 'linear-gradient(135deg, rgba(109,40,217,0.3) 0%, rgba(168,85,247,0.15) 100%)',
+    '分子晶體': 'linear-gradient(135deg, rgba(14,116,144,0.3) 0%, rgba(34,211,238,0.15) 100%)',
+    '金屬晶體': 'linear-gradient(135deg, rgba(180,83,9,0.3) 0%, rgba(245,158,11,0.15) 100%)'
+  };
+
+  const bg = gradientMap[reaction.crystalType] || 'rgba(255,255,255,0.05)';
+
+  panel.innerHTML = `
+    <div class="result-card" style="background:${bg}">
+      <!-- 結果標題 -->
+      <div class="result-header">
+        <span class="result-icon">${reaction.icon}</span>
+        <div class="result-title-group">
+          <h3 class="result-name">${reaction.name}</h3>
+          <span class="result-crystal-type" style="background:${reaction.color}">${reaction.crystalType}</span>
+        </div>
+      </div>
+
+      <!-- 化學反應式 -->
+      <div class="result-equation">
+        <span class="equation-label">反應式：</span>
+        <span class="equation-text">${reaction.equation}</span>
+      </div>
+
+      <!-- 詳細說明 -->
+      <div class="result-description">
+        ${reaction.description}
+      </div>
+
+      <!-- 性質標籤 -->
+      <div class="result-properties">
+        <span class="properties-label">主要性質：</span>
+        <div class="properties-tags">
+          ${reaction.properties.map(p => `<span class="property-tag" style="border-color:${reaction.color}40">${p}</span>`).join('')}
+        </div>
+      </div>
+
+      ${reaction.structureHint ? `
+      <!-- 結構提示 -->
+      <div class="result-structure">
+        <span class="structure-label">🔍 結構提示：</span>
+        <span class="structure-text">${reaction.structureHint}</span>
+      </div>
+      ` : ''}
+
+      ${reaction.isInferred ? `
+      <!-- 推斷提示 -->
+      <div class="result-inferred">
+        <span class="inferred-icon">💡</span>
+        <span>此結果為系統根據元素分類推斷，實際化合物可能更複雜。</span>
+      </div>
+      ` : ''}
+    </div>
+  `;
+
+  panel.classList.remove('hidden');
+  // 觸發動畫
+  panel.style.animation = 'none';
+  // 使用 requestAnimationFrame 確保動畫重新觸發
+  requestAnimationFrame(() => {
+    panel.style.animation = 'resultSlideIn 0.5s ease forwards';
+  });
+}
+
+/**
+ * 將合成結果加入歷史紀錄
+ * @param {Object} reaction - 反應結果物件
+ */
+function addToHistory(reaction) {
+  const el1 = labState.selectedElements[0];
+  const el2 = labState.selectedElements[1];
+
+  labState.history.unshift({
+    el1Symbol: el1.symbol,
+    el1Name: el1.name,
+    el2Symbol: el2.symbol,
+    el2Name: el2.name,
+    reaction: reaction
+  });
+
+  renderHistory();
+}
+
+/**
+ * 渲染歷史紀錄列表
+ */
+function renderHistory() {
+  const container = document.getElementById('lab-history');
+  const list = document.getElementById('history-list');
+  if (!container || !list) return;
+
+  if (labState.history.length === 0) {
+    container.classList.add('hidden');
+    return;
+  }
+
+  container.classList.remove('hidden');
+  list.innerHTML = '';
+
+  labState.history.forEach(record => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerHTML = `
+      <span class="history-elements">
+        <span class="history-el">${record.el1Symbol}</span>
+        <span class="history-plus">+</span>
+        <span class="history-el">${record.el2Symbol}</span>
+      </span>
+      <span class="history-arrow">→</span>
+      <span class="history-result">
+        <span class="history-icon">${record.reaction.icon}</span>
+        <span class="history-product">${record.reaction.product}</span>
+      </span>
+      <span class="history-type" style="background:${record.reaction.color}">${record.reaction.crystalType}</span>
+    `;
+
+    // 點擊歷史紀錄可重新顯示結果
+    item.addEventListener('click', () => {
+      showResultPanel(record.reaction);
+    });
+
+    list.appendChild(item);
+  });
+}
+
+/**
+ * 重置實驗室（清空選取與結果）
+ */
+function resetLab() {
+  labState.selectedElements = [];
+  updateReactionSlots();
+  renderElementGrid();
+
+  const resultPanel = document.getElementById('result-panel');
+  if (resultPanel) {
+    resultPanel.classList.add('hidden');
+    resultPanel.innerHTML = '';
+  }
+
+  // 重置結果欄位的自訂樣式
+  const resultSlot = document.getElementById('slot-result');
+  if (resultSlot) {
+    resultSlot.style.borderColor = '';
+    resultSlot.style.boxShadow = '';
+  }
+  const slot1 = document.getElementById('slot-1');
+  const slot2 = document.getElementById('slot-2');
+  if (slot1) { slot1.style.borderColor = ''; slot1.style.boxShadow = ''; }
+  if (slot2) { slot2.style.borderColor = ''; slot2.style.boxShadow = ''; }
+}
+
+// ====================================================================
 // 啟動應用
+// ====================================================================
 init();
