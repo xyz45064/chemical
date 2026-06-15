@@ -9,12 +9,8 @@ const EL = {
   resultScreen: document.getElementById('result-screen'),
   startBtn: document.getElementById('start-btn'),
   restartBtn: document.getElementById('restart-btn'),
-  modeRadios: document.getElementsByName('mode'),
   player1: document.getElementById('player1'),
-  player2: document.getElementById('player2'),
-  player2Label: document.getElementById('player2-label'),
   qcount: document.getElementById('qcount'),
-  playerIndicator: document.getElementById('player-indicator'),
   scoreDisplay: document.getElementById('score-display'),
   qIndex: document.getElementById('q-index'),
   qTotal: document.getElementById('q-total'),
@@ -30,25 +26,21 @@ const EL = {
 
 // --- 遊戲狀態 ---
 let state = {
-  mode: 'single',
-  players: [],
+  playerName: '玩家',
   totalQuestions: 10,
   questions: [],
   index: 0,
   timer: null,
   timeLimit: 15000,
   timeLeft: 15000,
-  totalScore: [0,0],
-  records: [],
-  currentPlayer: 0
+  totalScore: 0,
+  records: []
 };
 
 // ====================================================================
 // 初始化：綁定事件 + 渲染晶體百科
 // ====================================================================
 function init() {
-  // 遊戲模式切換（單人/雙人）
-  for (let r of EL.modeRadios) r.addEventListener('change', onModeChange);
   EL.startBtn.addEventListener('click', startGame);
   EL.restartBtn.addEventListener('click', () => location.reload());
   EL.nextBtn.addEventListener('click', nextQuestion);
@@ -221,27 +213,14 @@ function renderSpecialCases() {
 // 以下為原有的遊戲邏輯（未修改）
 // ====================================================================
 
-function onModeChange(){
-  const mode = Array.from(EL.modeRadios).find(r=>r.checked).value;
-  if(mode==='duo'){
-    EL.player2.disabled = false;
-  } else {
-    EL.player2.disabled = true;
-  }
-}
-
 function startGame(){
-  state.mode = Array.from(EL.modeRadios).find(r=>r.checked).value;
-  const p1 = EL.player1.value.trim()||'玩家1';
-  const p2 = EL.player2.value.trim()||'玩家2';
-  state.players = state.mode==='duo'?[p1,p2]:[p1];
+  state.playerName = EL.player1.value.trim() || '玩家';
   state.totalQuestions = parseInt(EL.qcount.value,10);
   // 隨機取題
   state.questions = shuffleArray(QUESTION_BANK).slice(0,state.totalQuestions);
   state.index = 0;
-  state.totalScore = state.mode==='duo'?[0,0]:[0];
+  state.totalScore = 0;
   state.records = [];
-  state.currentPlayer = 0;
 
   EL.startScreen.classList.add('hidden');
   EL.gameScreen.classList.remove('hidden');
@@ -253,7 +232,6 @@ function startGame(){
 function renderQuestion(){
   const q = state.questions[state.index];
   EL.qIndex.textContent = state.index+1;
-  EL.playerIndicator.textContent = state.mode==='duo'?`目前：${state.players[state.currentPlayer]}`:`玩家：${state.players[0]}`;
   EL.qText.textContent = q.q;
   EL.choices.innerHTML = '';
   EL.feedback.classList.add('hidden');
@@ -309,7 +287,7 @@ function handleAnswer(chosenIdx, isTimeout){
     score = Math.round(secsLeft/15*10);
   }
   // 記錄答題
-  const playerName = state.players[state.currentPlayer];
+  const playerName = state.playerName;
   state.records.push({
     q: q.q,
     choices: q.choices,
@@ -320,11 +298,8 @@ function handleAnswer(chosenIdx, isTimeout){
     score
   });
   // 更新分數
-  if(state.mode==='duo'){
-    state.totalScore[state.currentPlayer] += score;
-  } else {
-    state.totalScore[0] += score;
-  }
+  state.totalScore += score;
+  
   // 標記選項狀態：正確/錯誤/淡化
   Array.from(EL.choices.children).forEach((ch)=>{
     ch.classList.add('disabled');
@@ -350,14 +325,10 @@ function handleAnswer(chosenIdx, isTimeout){
   EL.feedback.innerHTML = `<div><strong>${chosenIdx===correct? '答對':'答錯'}</strong> （得分：${score}）</div><div>${chosenText}</div><div>${correctText}</div><div style="margin-top:6px;color:#333">解析：${q.explain}</div>`;
   EL.feedback.classList.remove('hidden');
   EL.nextBtn.classList.remove('hidden');
-  EL.scoreDisplay.textContent = '分數: ' + (state.mode==='duo'? state.totalScore[state.currentPlayer] : state.totalScore[0]);
+  EL.scoreDisplay.textContent = '分數: ' + state.totalScore;
 }
 
 function nextQuestion(){
-  // 雙人模式：切換玩家
-  if(state.mode==='duo'){
-    state.currentPlayer = (state.currentPlayer+1) % 2;
-  }
   state.index++;
   if(state.index>=state.totalQuestions){
     endGame();
@@ -370,26 +341,18 @@ function endGame(){
   EL.gameScreen.classList.add('hidden');
   EL.resultScreen.classList.remove('hidden');
   // 結果摘要
-  if(state.mode==='duo'){
-    const p0 = state.players[0];
-    const p1 = state.players[1];
-    const s0 = state.totalScore[0]||0;
-    const s1 = state.totalScore[1]||0;
-    const winner = s0===s1? '平手' : (s0>s1? `${p0} 勝利` : `${p1} 勝利`);
-    EL.summary.innerHTML = `<div>${p0}：${s0} 分</div><div>${p1}：${s1} 分</div><div><strong>${winner}</strong></div>`;
-  } else {
-    const total = state.totalScore[0]||0;
-    const correctCount = state.records.filter(r=>r.chosen===r.correct).length;
-    const rate = Math.round(correctCount/state.totalQuestions*100);
-    EL.summary.innerHTML = `<div>總分：${total}</div><div>答對：${correctCount} / ${state.totalQuestions}</div><div>正確率：${rate}%</div>`;
-  }
+  const total = state.totalScore||0;
+  const correctCount = state.records.filter(r=>r.chosen===r.correct).length;
+  const rate = Math.round(correctCount/state.totalQuestions*100);
+  EL.summary.innerHTML = `<div>總分：${total}</div><div>答對：${correctCount} / ${state.totalQuestions}</div><div>正確率：${rate}%</div>`;
+
   // 答題紀錄列表
   EL.records.innerHTML = '<h3>答題紀錄</h3>';
   const ul = document.createElement('ul');
   state.records.forEach((r,i)=>{
     const li = document.createElement('li');
     const chosen = r.chosen===null? '未作答' : `${String.fromCharCode(65+r.chosen)}. ${r.choices[r.chosen]}`;
-    li.innerHTML = `<strong>Q${i+1}</strong> (${r.player}) ${r.q} <br>你的回答：${chosen} <br>正確：${String.fromCharCode(65+r.correct)}. ${r.choices[r.correct]} <br>得分：${r.score} <br>解析：${r.explain}`;
+    li.innerHTML = `<strong>Q${i+1}</strong> ${r.q} <br>你的回答：${chosen} <br>正確：${String.fromCharCode(65+r.correct)}. ${r.choices[r.correct]} <br>得分：${r.score} <br>解析：${r.explain}`;
     ul.appendChild(li);
   });
   EL.records.appendChild(ul);

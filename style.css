@@ -46,7 +46,18 @@ body::before{
    容器與頁首
    ==================================================================== */
 .container{max-width:940px;margin:28px auto;padding:20px;position:relative;z-index:1}
-header h1{margin:0 0 12px 0;font-size:26px;text-align:center;color:#f0ebff}
+.header-title-container{
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	gap:12px;
+	margin-bottom:12px;
+}
+.header-logo{
+	height:40px;
+	width:auto;
+}
+header h1{margin:0;font-size:26px;text-align:center;color:#f0ebff}
 
 /* ====================================================================
    導覽列分頁按鈕（遊戲 / 晶體百科）
@@ -111,7 +122,6 @@ header h1{margin:0 0 12px 0;font-size:26px;text-align:center;color:#f0ebff}
 	backdrop-filter: blur(10px);
 }
 .hidden{display:none}
-.mode-select label{margin-right:14px;color:var(--text)}
 .names label{display:block;margin:8px 0;color:var(--text)}
 .names input, .count-select select{
 	background:rgba(255,255,255,0.08);

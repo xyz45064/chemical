@@ -12,7 +12,10 @@
 <body>
   <div class="container">
     <header>
-      <h1>高中化學晶體綜合比較</h1>
+      <div class="header-title-container">
+        <img src="https://www.nths.kh.edu.tw/images/nths_s.png" alt="NTHS Logo" class="header-logo" />
+        <h1>高中化學晶體綜合比較</h1>
+      </div>
       <!-- 導覽列：在「問答遊戲」與「晶體百科」之間切換 -->
       <nav id="main-nav" class="tab-nav">
         <button class="tab-btn active" data-tab="game">🎮 問答遊戲</button>
@@ -24,14 +27,9 @@
       <!-- ============ 遊戲分頁 ============ -->
       <div id="tab-game" class="tab-content active">
         <section id="start-screen" class="screen">
-          <h2>開始</h2>
-          <div class="mode-select">
-            <label><input type="radio" name="mode" value="single" checked> 單人</label>
-            <label><input type="radio" name="mode" value="duo"> 雙人</label>
-          </div>
+          <h2>設定</h2>
           <div class="names">
-            <label>玩家一名稱： <input id="player1" placeholder="玩家1"/></label>
-            <label id="player2-label">玩家二名稱： <input id="player2" placeholder="玩家2" disabled/></label>
+            <label>玩家名稱： <input id="player1" placeholder="請輸入姓名" value="玩家"/></label>
           </div>
           <div class="count-select">
             <label>題數：
@@ -48,7 +46,6 @@
 
         <section id="game-screen" class="screen hidden">
           <div class="game-header">
-            <div id="player-indicator"></div>
             <div id="score-display">分數: 0</div>
           </div>
           <div id="question-meta">題號: <span id="q-index">0</span>/<span id="q-total">0</span></div>
