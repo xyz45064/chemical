@@ -34,8 +34,11 @@ let state = {
   timeLimit: 15000,
   timeLeft: 15000,
   totalScore: 0,
-  records: []
+  records: [],
+  scoreHistory: []
 };
+
+const SCOREBOARD_KEY = 'chemical-scoreboard-v1';
 
 // ====================================================================
 // 初始化：綁定事件 + 渲染晶體百科
@@ -45,6 +48,11 @@ function init() {
   EL.restartBtn.addEventListener('click', () => location.reload());
   EL.nextBtn.addEventListener('click', nextQuestion);
 
+  const clearScoreBtn = document.getElementById('clear-score-btn');
+  if (clearScoreBtn) {
+    clearScoreBtn.addEventListener('click', clearScoreHistory);
+  }
+
   // 分頁導覽按鈕
   initTabNavigation();
 
@@ -52,6 +60,9 @@ function init() {
   renderCrystalCards();
   renderComparisonTable();
   renderSpecialCases();
+
+  // 初始化成績表單
+  renderScoreSheet();
 
   // 初始化互動實驗室（元素合成功能）
   initLab();
@@ -340,6 +351,60 @@ function nextQuestion(){
   }
 }
 
+function loadScoreHistory() {
+  try {
+    const raw = localStorage.getItem(SCOREBOARD_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed;
+  } catch (error) {
+    console.warn('無法讀取成績表單：', error);
+    return [];
+  }
+}
+
+function saveScoreHistory(entries) {
+  try {
+    localStorage.setItem(SCOREBOARD_KEY, JSON.stringify(entries));
+  } catch (error) {
+    console.warn('無法儲存成績表單：', error);
+  }
+}
+
+function clearScoreHistory() {
+  const confirmed = window.confirm('確定要清除所有成績紀錄嗎？');
+  if (!confirmed) return;
+
+  saveScoreHistory([]);
+  renderScoreSheet();
+}
+
+function renderScoreSheet() {
+  const tbody = document.getElementById('score-table-body');
+  if (!tbody) return;
+
+  const entries = loadScoreHistory();
+  if (!entries.length) {
+    tbody.innerHTML = '<tr><td colspan="4">尚無成績紀錄</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = entries.map((entry, index) => {
+    const name = entry.name || '玩家';
+    const score = Number(entry.score) || 0;
+    const rate = Number(entry.correctRate) || 0;
+    return `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${name}</td>
+        <td>${score}</td>
+        <td>${rate}%</td>
+      </tr>
+    `;
+  }).join('');
+}
+
 function endGame(){
   EL.gameScreen.classList.add('hidden');
   EL.resultScreen.classList.remove('hidden');
@@ -348,6 +413,21 @@ function endGame(){
   const correctCount = state.records.filter(r=>r.chosen===r.correct).length;
   const rate = Math.round(correctCount/state.totalQuestions*100);
   EL.summary.innerHTML = `<div>總分：${total}</div><div>答對：${correctCount} / ${state.totalQuestions}</div><div>正確率：${rate}%</div>`;
+
+  // 成績表單：記錄學生名稱、分數、答對率並保留歷史
+  const scoreEntry = {
+    name: state.playerName,
+    score: total,
+    correctRate: rate,
+    totalQuestions: state.totalQuestions,
+    createdAt: new Date().toISOString()
+  };
+
+  const history = loadScoreHistory();
+  history.unshift(scoreEntry);
+  const trimmed = history.slice(0, 10);
+  saveScoreHistory(trimmed);
+  renderScoreSheet();
 
   // 答題紀錄列表
   EL.records.innerHTML = '<h3>答題紀錄</h3>';

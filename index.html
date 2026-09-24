@@ -67,6 +67,25 @@
         <section id="result-screen" class="screen hidden">
           <h2>遊戲結果</h2>
           <div id="summary"></div>
+
+          <div id="score-sheet" class="score-sheet">
+            <div class="score-sheet-header">
+              <h3>成績表單</h3>
+              <button id="clear-score-btn" class="clear-score-btn" type="button">清除成績紀錄</button>
+            </div>
+            <table class="score-table">
+              <thead>
+                <tr>
+                  <th>排名</th>
+                  <th>學生名稱</th>
+                  <th>分數</th>
+                  <th>答對率</th>
+                </tr>
+              </thead>
+              <tbody id="score-table-body"></tbody>
+            </table>
+          </div>
+
           <div id="records"></div>
           <button id="restart-btn">回到開始</button>
         </section>

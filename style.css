@@ -216,6 +216,67 @@ button, .choice{transition:all .18s ease}
 #records{margin-top:12px;color:var(--text)}
 #records ul{padding-left:18px}
 #records li{margin-bottom:10px;line-height:1.7;color:rgba(232,226,244,0.8)}
+
+.score-sheet{
+  margin:18px 0 16px;
+  padding:16px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+}
+.score-sheet-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.score-sheet h3{
+  margin:0;
+  color:#f0ebff;
+  font-size:18px;
+}
+.clear-score-btn{
+  padding:8px 12px;
+  border:none;
+  border-radius:10px;
+  background:rgba(239,68,68,0.18);
+  color:#fecaca;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:700;
+  transition:all .2s ease;
+}
+.clear-score-btn:hover{
+  background:rgba(239,68,68,0.28);
+  transform:translateY(-1px);
+}
+.score-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:14px;
+  overflow:hidden;
+}
+.score-table th,
+.score-table td{
+  padding:10px 12px;
+  text-align:center;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.score-table th{
+  background:rgba(168,85,247,0.18);
+  color:#f5e7ff;
+  font-weight:700;
+}
+.score-table td{
+  color:rgba(232,226,244,0.85);
+}
+.score-table tbody tr:nth-child(even){
+  background:rgba(255,255,255,0.02);
+}
+.score-table tbody tr:hover{
+  background:rgba(168,85,247,0.08);
+}
 footer{margin-top:12px;text-align:center;color:var(--text-dim)}
 
 /* 小星星裝飾 */
